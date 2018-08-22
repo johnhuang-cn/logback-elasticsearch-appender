@@ -2,6 +2,8 @@
 
 The Logback ElasticSearch appender send log to ElasticSearch cluster directly without LogStash or FileBeat.
 
+[中文说明](https://www.toutiao.com/i6592518127915893256/)
+
 ## User Guide
 
 ### Download
