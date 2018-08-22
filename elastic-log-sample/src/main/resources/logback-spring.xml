@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration>
+	<include resource="org/springframework/boot/logging/logback/base.xml" />
+	<appender name="STDOUT"
+		class="ch.qos.logback.core.ConsoleAppender">
+		<encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+			<pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{50} - %msg%n</pattern>
+		</encoder>
+	</appender>
+	
+	<appender name="ELASTIC" class="net.xdevelop.logback.appender.ElasticAppender">
+		<clusterName>docker-cluster</clusterName>
+		<clusterNodes>192.168.1.21:9300</clusterNodes>
+		<applicationName>elastic-log-sample</applicationName>
+	</appender>
+	
+	<!-- 日志输出级别 -->
+    <root level="INFO">
+        <appender-ref ref="STDOUT" />
+        <appender-ref ref="ELASTIC" />
+    </root> 	
+	<logger name="net.xdevelop.elasticlogdemo" level="INFO" />
+</configuration>
