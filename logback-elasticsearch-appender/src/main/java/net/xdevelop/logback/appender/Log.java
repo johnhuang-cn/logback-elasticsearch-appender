@@ -32,7 +32,7 @@ public class Log implements Serializable {
 	
 	@Field(
 		    type = FieldType.Date, 
-		    store = true//, 
+		    store = false//, 
 		    //format = DateFormat.custom, pattern = "yyyy-MM-dd hh:mm:ss"
 		)
 //	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd hh:mm:ss")

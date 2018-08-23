@@ -24,21 +24,18 @@ import ch.qos.logback.core.AppenderBase;
  */
 public class ElasticAppender extends AppenderBase<ILoggingEvent> {
 	private static Object locker = new Object();
-	private static ElasticsearchTemplate esTemplate;
 	
-	private Log log = new Log();
 	private String clusterName;
 	private String clusterNodes;
 	private String applicationName = "default";
 	
 	@Override
 	public void start() {
-		super.start();
-		
 		synchronized(locker) {
-			if (esTemplate != null) {
+			if (isStarted()) {
 				return;
 			}
+			super.start();
 			
 			try {
 				Settings settings = Settings.builder()
@@ -57,13 +54,16 @@ public class ElasticAppender extends AppenderBase<ILoggingEvent> {
 				}
 				client.connectedNodes();
 				
-				esTemplate = new ElasticsearchTemplate(client);
+				ElasticsearchTemplate esTemplate = new ElasticsearchTemplate(client);
 				
 				// create elasticsearch index and mapping at the first time
 				if (!esTemplate.indexExists(Log.class)) {
 					esTemplate.createIndex(Log.class);
 					esTemplate.putMapping(Log.class);
 				}
+				
+				AsyncSender asyncSender = new AsyncSender(esTemplate);
+				asyncSender.start();
 			} catch (Exception e) {
 				e.printStackTrace();
 				throw new RuntimeException(e);
@@ -73,21 +73,16 @@ public class ElasticAppender extends AppenderBase<ILoggingEvent> {
 
 	@Override
 	protected void append(ILoggingEvent eo) {
-		if (esTemplate != null) {
-			synchronized (log) {
-				log.setApplicationName(applicationName);
-				log.setId(applicationName + "-" + System.currentTimeMillis());
-				log.setLevel(eo.getLevel().toString());
-				log.setLoggerName(eo.getLoggerName());
-				log.setMessage(eo.getFormattedMessage());
-				log.setThreadName(eo.getThreadName());
-				log.setTimeStamp(new Date(eo.getTimeStamp()));
-				IndexQuery indexQuery = new IndexQueryBuilder().withId(log.getId())
-						.withObject(log).build();
-				
-				esTemplate.index(indexQuery);
-			}
-		}
+		Log log = new Log();
+		log.setApplicationName(applicationName);
+		log.setId(System.currentTimeMillis() + "-" + System.nanoTime());
+		log.setLevel(eo.getLevel().toString());
+		log.setLoggerName(eo.getLoggerName());
+		log.setMessage(eo.getFormattedMessage());
+		log.setThreadName(eo.getThreadName());
+		log.setTimeStamp(new Date(eo.getTimeStamp()));
+		
+		AsyncSender.put(log);
 	}
 
 	public String getClusterName() {
