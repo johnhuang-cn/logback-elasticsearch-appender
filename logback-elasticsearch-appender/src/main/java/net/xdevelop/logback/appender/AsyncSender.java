@@ -2,7 +2,6 @@ package net.xdevelop.logback.appender;
 
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import org.springframework.data.elasticsearch.core.ElasticsearchTemplate;
 import org.springframework.data.elasticsearch.core.query.IndexQuery;
@@ -22,7 +21,7 @@ public class AsyncSender extends Thread {
 		while (true) {
 			try {
 				sendLog(queue.take());
-			} catch (InterruptedException e) {
+			} catch (Exception e) {
 			}
 		}
 	}
